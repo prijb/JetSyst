@@ -11,6 +11,7 @@ def encode_eta(eta):
         return "pos" + str(eta).replace(".", "p")
 
 # Argument parser
+# Example: python3 Preprocess/fit_histos.py --input outputs/Histogram/muon2024g_muonjet --output outputs/Fit/muon2024g_muonjet --script Preprocess/fit_histo.py --plotdir plots/Fit/muon2024g_muonjet
 parser = argparse.ArgumentParser(description='Create histograms')
 parser.add_argument('--input', '-i', type=str, help='Input directory')
 parser.add_argument('--output', '-o', type=str, help='Output directory')

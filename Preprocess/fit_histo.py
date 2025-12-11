@@ -140,25 +140,40 @@ try:
     #mean_scale = sp.optimize.brentq(lambda x: cumsum_func(x) - 0.50, x_scale[0], x_scale[-1])
     #rms_scale = (x_84 - x_16) / 2.0
 
-    # Bootstrap to get the errors on the mean and RMS without fitting
+    # Bootstrap to get the errors on the mean and RMS with fitting
     mean_scale_bootstrap = []
     for i_bootstrap in range(100):
         y_scale_bootstrap = np.random.poisson(y_scale)
 
         x_scale_pos_bootstrap = np.argmax(y_scale_bootstrap)
-        x_scale_pos_low_bootstrap = np.max([x_scale_pos_bootstrap - (9 // rebin_factor), 0])
-        x_scale_pos_high_bootstrap = np.min([x_scale_pos_bootstrap + (15 // rebin_factor), len(x_scale)])
+        x_scale_pos_low_bootstrap = np.max([x_scale_pos_bootstrap - (6 // rebin_factor), 0])
+        x_scale_pos_high_bootstrap = np.min([x_scale_pos_bootstrap + (6 // rebin_factor), len(x_scale)])
         fit_x_scale_bootstrap = x_scale[x_scale_pos_low_bootstrap:x_scale_pos_high_bootstrap]
         fit_y_scale_bootstrap = y_scale_bootstrap[x_scale_pos_low_bootstrap:x_scale_pos_high_bootstrap]
+        fit_dy_scale_bootstrap = dy_scale[x_scale_pos_low_bootstrap:x_scale_pos_high_bootstrap]
 
-        mean_scale_bootstrap.append(np.average(fit_x_scale_bootstrap, weights=fit_y_scale_bootstrap))
+        #mean_scale_bootstrap.append(np.average(fit_x_scale_bootstrap, weights=fit_y_scale_bootstrap)) # No fit
+        a_scale_guess_bootstrap = y_scale_bootstrap[x_scale_pos_bootstrap]
+        mean_scale_guess_bootstrap = x_scale[x_scale_pos_bootstrap]
+        sig_scale_guess_bootstrap = np.average((fit_x_scale_bootstrap - mean_scale_guess_bootstrap)**2, weights=fit_y_scale_bootstrap)**0.5
+        try:
+            p0_scale_bootstrap = [a_scale_guess_bootstrap, mean_scale_guess_bootstrap, sig_scale_guess_bootstrap]
+            popt_scale_bootstrap, pcov_scale_bootstrap = curve_fit(gauss, fit_x_scale_bootstrap, fit_y_scale_bootstrap, p0=p0_scale_bootstrap, sigma=fit_dy_scale_bootstrap, absolute_sigma=True)
+            mean_scale_bootstrap.append(popt_scale_bootstrap[1])
+        except:
+            print(f"Bootstrap fit {i_bootstrap} failed, skipping")
+
     mean_scale_bootstrap = np.array(mean_scale_bootstrap)
+    print(f"Number of successful bootstraps: {len(mean_scale_bootstrap)}/100")
 
     mean_scale_fit = popt_scale[1]
     std_scale_fit = popt_scale[2]
     mean_scale_fit_err = np.sqrt(pcov_scale[1, 1])
     std_scale_fit_err = np.sqrt(pcov_scale[2, 2])
-    mean_scale_err = np.std(mean_scale_bootstrap)
+    # The error on the mean of the histogram from bootstrapping
+    mean_scale_err_bootstrap = np.std(mean_scale_bootstrap)
+    # The error on the mean of the histogram is just the RMS divided by sqrt(sum(y_scale))
+    mean_scale_err = rms_scale/np.sqrt(np.sum(y_scale))
 except:
     # Plot the histogram without fit
     fig, ax = plt.subplots()
@@ -196,19 +211,24 @@ except:
         y_scale_bootstrap = np.random.poisson(y_scale)
 
         x_scale_pos_bootstrap = np.argmax(y_scale_bootstrap)
-        x_scale_pos_low_bootstrap = np.max([x_scale_pos_bootstrap - (9 // rebin_factor), 0])
-        x_scale_pos_high_bootstrap = np.min([x_scale_pos_bootstrap + (15 // rebin_factor), len(x_scale)])
+        x_scale_pos_low_bootstrap = np.max([x_scale_pos_bootstrap - (6 // rebin_factor), 0])
+        x_scale_pos_high_bootstrap = np.min([x_scale_pos_bootstrap + (6 // rebin_factor), len(x_scale)])
         fit_x_scale_bootstrap = x_scale[x_scale_pos_low_bootstrap:x_scale_pos_high_bootstrap]
         fit_y_scale_bootstrap = y_scale_bootstrap[x_scale_pos_low_bootstrap:x_scale_pos_high_bootstrap]
 
         mean_scale_bootstrap.append(np.average(fit_x_scale_bootstrap, weights=fit_y_scale_bootstrap))
+
     mean_scale_bootstrap = np.array(mean_scale_bootstrap)
+    print(f"Number of successful bootstraps: {len(mean_scale_bootstrap)}/100")
 
     mean_scale_fit = mean_scale
     std_scale_fit = rms_scale
-    mean_scale_fit_err = 0.0
+    mean_scale_fit_err = rms_scale/np.sqrt(np.sum(y_scale))
     std_scale_fit_err = 0.0
-    mean_scale_err = np.std(mean_scale_bootstrap)
+    # The error on the mean of the histogram from bootstrapping
+    mean_scale_err_bootstrap = np.std(mean_scale_bootstrap)
+    # The error on the mean of the histogram is just the RMS divided by sqrt(sum(y_scale)) (TO DO: Compare with bootstrap)
+    mean_scale_err = rms_scale/np.sqrt(np.sum(y_scale))
     
 
 ####### Resolution fit #########
@@ -369,6 +389,7 @@ resolution_dict = {}
 scale_dict["x"] = mean_pt_scale
 scale_dict["mean_guess"] = mean_scale
 scale_dict["mean_guess_err"] = mean_scale_err
+scale_dict["mean_guess_err_bootstrap"] = mean_scale_err_bootstrap
 scale_dict["mean_fit"] = mean_scale_fit
 scale_dict["mean_fit_err"] = mean_scale_fit_err
 scale_dict["std_guess"] = rms_scale
