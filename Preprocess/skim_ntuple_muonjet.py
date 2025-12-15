@@ -50,7 +50,7 @@ ROOT.gInterpreter.Declare("""
                 float dEta = Jet_eta[i] - RecoJet_eta[j];
                 float dPhi = TVector2::Phi_mpi_pi(Jet_phi[i] - RecoJet_phi[j]);
                 float dr = std::sqrt(dEta*dEta + dPhi*dPhi);
-                float dpt = std::abs(Jet_pt[i] - RecoJet_et[j])/Jet_pt[i];
+                float dpt = std::abs(Jet_pt[i] - RecoJet_et[j])/RecoJet_et[j];
                 
                 //if((dr < minDR) && (dr < 0.2)){
                 //    minDR = dr;
@@ -87,7 +87,7 @@ ROOT.gInterpreter.Declare("""
                 float dEta = Jet_eta[i] - RecoJet_eta[j];
                 float dPhi = TVector2::Phi_mpi_pi(Jet_phi[i] - RecoJet_phi[j]);
                 float dr = std::sqrt(dEta*dEta + dPhi*dPhi);
-                float dpt = std::abs(Jet_pt[i] - RecoJet_et[j])/Jet_pt[i];
+                float dpt = std::abs(Jet_pt[i] - RecoJet_et[j])/RecoJet_et[j];
 
                 //if((dr < minDR) && (dr < 0.2)){
                 //    minDR = dr;
@@ -139,24 +139,25 @@ df = df.Define('badmuonPt10','Muon_pt>10&&abs(Muon_pdgId)==13&&Muon_PassTightId=
 df = df.Filter('Sum(badmuonPt10)==0','No bad quality muon')
 
 # RecoJet cleaning (optional)
-#df = df.Define("absJetEta", "abs(Jet_eta)")
-#df = df.Define("passPFJetID",
-#    """
-#    (absJetEta <= 2.6 && Jet_neHEF < 0.90 && Jet_neEmEF < 0.90 && Jet_nConstituents > 1 &&
-#    Jet_muEF < 0.80 && Jet_chHEF > 0.01 && Jet_chMultiplicity > 0 && Jet_chEmEF < 0.80) ||
-#
-#    (absJetEta > 2.6 && absJetEta <= 2.7 && Jet_neHEF < 0.90 && Jet_neEmEF < 0.99 &&
-#    Jet_muEF < 0.80 && Jet_chEmEF < 0.80) ||
-#
-#    (absJetEta > 2.7 && absJetEta <= 3.0 && Jet_neHEF < 0.9999) ||
-#
-#    (absJetEta > 3.0 && absJetEta <= 5.0 && Jet_neEmEF < 0.90 && Jet_neMultiplicity > 2)
-#    """
-#)
-#df = df.Define('isCleanJet', 'passPFJetID && Jet_muEF < 0.5 && Jet_chEmEF < 0.5')
-#df = df.Redefine('Jet_pt', 'Jet_pt[isCleanJet]')
-#df = df.Redefine('Jet_eta', 'Jet_eta[isCleanJet]')
-#df = df.Redefine('Jet_phi', 'Jet_phi[isCleanJet]')
+df = df.Define("absJetEta", "abs(Jet_eta)")
+df = df.Define("passPFJetID",
+    """
+    (absJetEta <= 2.6 && Jet_neHEF < 0.90 && Jet_neEmEF < 0.90 && Jet_nConstituents > 1 &&
+    Jet_muEF < 0.80 && Jet_chHEF > 0.01 && Jet_chMultiplicity > 0 && Jet_chEmEF < 0.80) ||
+
+    (absJetEta > 2.6 && absJetEta <= 2.7 && Jet_neHEF < 0.90 && Jet_neEmEF < 0.99 &&
+    Jet_muEF < 0.80 && Jet_chEmEF < 0.80) ||
+
+    (absJetEta > 2.7 && absJetEta <= 3.0 && Jet_neHEF < 0.9999) ||
+
+    (absJetEta > 3.0 && absJetEta <= 5.0 && Jet_neEmEF < 0.90 && Jet_neMultiplicity > 2)
+    """
+)
+df = df.Define('isCleanJet', 'passPFJetID && Jet_muEF < 0.5 && Jet_chEmEF < 0.5')
+# Apply cuts to jets
+df = df.Redefine('Jet_pt', 'Jet_pt[isCleanJet]')
+df = df.Redefine('Jet_eta', 'Jet_eta[isCleanJet]')
+df = df.Redefine('Jet_phi', 'Jet_phi[isCleanJet]')
 
 # Sort jets by pT
 df = df.Define( "L1Jet_ptorder", "Reverse(Argsort(L1Jet_pt))")
@@ -165,8 +166,10 @@ df = df.Redefine("L1Jet_eta", "Take(L1Jet_eta, L1Jet_ptorder)")
 df = df.Redefine("L1Jet_phi", "Take(L1Jet_phi, L1Jet_ptorder)")
 
 # Basic event selection
-df = df.Filter("(L1Jet_pt[0] >= 20) && (L1Jet_pt[1] >= 20)")
-df = df.Filter("std::abs(L1Jet_eta[0]) < 3.0 && std::abs(L1Jet_eta[1]) < 3.0")
+#df = df.Filter("(L1Jet_pt[0] >= 20) && (L1Jet_pt[1] >= 20)")
+#df = df.Filter("std::abs(L1Jet_eta[0]) < 3.0 && std::abs(L1Jet_eta[1]) < 3.0")
+df = df.Filter("(L1Jet_pt[0] >= 20)")
+df = df.Filter("std::abs(L1Jet_eta[0]) < 3.0")
 df = df.Filter("Sum(L1Jet_pt == 1023.5) == 0", "Saturated L1 jet veto")
 
 # Skim out all the jets
@@ -174,14 +177,14 @@ df = df.Define("L1Jet_skim", "(L1Jet_pt >= 20) && (abs(L1Jet_eta) < 3.0)")
 df = df.Redefine("L1Jet_pt", "L1Jet_pt[L1Jet_skim]").Redefine("L1Jet_eta", "L1Jet_eta[L1Jet_skim]").Redefine("L1Jet_phi", "L1Jet_phi[L1Jet_skim]")
 
 # Make sure that they're not dR matched to a muon
-df = df.Define("L1Jet_dRNearestMuon", "getdRNearestMuon(L1Jet_eta, L1Jet_phi, Muon_eta, Muon_phi)")
-df = df.Define("L1Jet_muonVeto", "L1Jet_dRNearestMuon > 0.4")
-df = df.Redefine("L1Jet_pt", "L1Jet_pt[L1Jet_muonVeto]").Redefine("L1Jet_eta", "L1Jet_eta[L1Jet_muonVeto]").Redefine("L1Jet_phi", "L1Jet_phi[L1Jet_muonVeto]").Redefine("L1Jet_dRNearestMuon", "L1Jet_dRNearestMuon[L1Jet_muonVeto]")
+#df = df.Define("L1Jet_dRNearestMuon", "getdRNearestMuon(L1Jet_eta, L1Jet_phi, Muon_eta, Muon_phi)")
+#df = df.Define("L1Jet_muonVeto", "L1Jet_dRNearestMuon > 0.4")
+#df = df.Redefine("L1Jet_pt", "L1Jet_pt[L1Jet_muonVeto]").Redefine("L1Jet_eta", "L1Jet_eta[L1Jet_muonVeto]").Redefine("L1Jet_phi", "L1Jet_phi[L1Jet_muonVeto]").Redefine("L1Jet_dRNearestMuon", "L1Jet_dRNearestMuon[L1Jet_muonVeto]")
 
 # Define quantities
 df = df.Define("Jet_et", "getJetEt(Jet_pt, Jet_eta, Jet_phi, Jet_mass)") 
-df = df.Define("L1Jet_matchedRecoPt", "getMatchedPt(Jet_et, Jet_eta, Jet_phi, L1Jet_pt, L1Jet_eta, L1Jet_phi)")
-df = df.Define("L1Jet_matchedRecoEta", "getMatchedEta(Jet_et, Jet_eta, Jet_phi, L1Jet_pt, L1Jet_eta, L1Jet_phi)")
+df = df.Define("L1Jet_matchedRecoPt", "getMatchedPt(Jet_pt, Jet_eta, Jet_phi, L1Jet_pt, L1Jet_eta, L1Jet_phi)")
+df = df.Define("L1Jet_matchedRecoEta", "getMatchedEta(Jet_pt, Jet_eta, Jet_phi, L1Jet_pt, L1Jet_eta, L1Jet_phi)")
 
 # Filter L1 jets to only those that have matches
 df = df.Define("L1Jet_isMatched", "L1Jet_matchedRecoPt > 0")
