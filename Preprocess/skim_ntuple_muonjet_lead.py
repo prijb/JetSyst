@@ -1,4 +1,4 @@
-# Skim NANOAOD ntuples for L1 JEC/JERs derived using the MuonJet method
+# Similar to skim_ntuple_muonjet.py but restricted to only leading and subleading jets
 import ROOT
 import time
 import argparse
@@ -122,6 +122,20 @@ ROOT.gInterpreter.Declare("""
         }    
         return dRNearestMuon;                     
     }
+                          
+    // Pick at most two indicies
+    auto getLeadingIndices(Vfloat Jet_pt){
+        Vint LeadingIndices;
+        
+        int idx = 0;
+        for(size_t i = 0; i < Jet_pt.size(); ++i){
+            if (idx > 1) break;
+            LeadingIndices.push_back(idx);
+            idx++;
+        }
+
+        return LeadingIndices;
+    }
 """)
 
 # Input data
@@ -170,14 +184,16 @@ df = df.Redefine("L1Jet_phi", "Take(L1Jet_phi, L1Jet_ptorder)")
 df = df.Filter("(L1Jet_pt[0] >= 20)").Filter("std::abs(L1Jet_eta[0]) < 3.0")
 df = df.Filter("Sum(L1Jet_pt == 1023.5) == 0", "Saturated L1 jet veto")
 
+# Get the leading jets
+df = df.Define("L1Jet_leadingindices", "getLeadingIndices(L1Jet_pt)")
+df = df.Redefine("L1Jet_pt", "Take(L1Jet_pt, L1Jet_leadingindices)")
+df = df.Redefine("L1Jet_eta", "Take(L1Jet_eta, L1Jet_leadingindices)")
+df = df.Redefine("L1Jet_phi", "Take(L1Jet_phi, L1Jet_leadingindices)")
+
 # Skim out all the jets
 df = df.Define("L1Jet_skim", "(L1Jet_pt >= 20) && (abs(L1Jet_eta) < 3.0)")
 df = df.Redefine("L1Jet_pt", "L1Jet_pt[L1Jet_skim]").Redefine("L1Jet_eta", "L1Jet_eta[L1Jet_skim]").Redefine("L1Jet_phi", "L1Jet_phi[L1Jet_skim]")
 
-# Make sure that they're not dR matched to a muon
-#df = df.Define("L1Jet_dRNearestMuon", "getdRNearestMuon(L1Jet_eta, L1Jet_phi, Muon_eta, Muon_phi)")
-#df = df.Define("L1Jet_muonVeto", "L1Jet_dRNearestMuon > 0.4")
-#df = df.Redefine("L1Jet_pt", "L1Jet_pt[L1Jet_muonVeto]").Redefine("L1Jet_eta", "L1Jet_eta[L1Jet_muonVeto]").Redefine("L1Jet_phi", "L1Jet_phi[L1Jet_muonVeto]").Redefine("L1Jet_dRNearestMuon", "L1Jet_dRNearestMuon[L1Jet_muonVeto]")
 
 # Define quantities
 df = df.Define("Jet_et", "getJetEt(Jet_pt, Jet_eta, Jet_phi, Jet_mass)") 
