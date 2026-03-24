@@ -84,7 +84,7 @@ num_pt_bins = len(pt_edges) - 1
 num_eta_bins = len(eta_edges) - 1
 
 # Make a pandas dataframe to collect the fit results to plot
-col_names = ["pt_bin", "eta_bin", "mean_pt", "mean_scale", "mean_scale_err", "mean_scale_err_bootstrap", "mean_scale_fit", "mean_scale_fit_err", "rms_scale", "std_scale", "reco_pt"]
+col_names = ["pt_bin", "eta_bin", "mean_pt", "mean_fit", "mean_guess", "mean_fit_err", "mean_guess_err"]
 df_a = pd.DataFrame(columns=col_names)
 df_b= pd.DataFrame(columns=col_names)
 
@@ -108,11 +108,11 @@ for i_eta_bin in range(num_eta_bins):
                 result_a = result_a["scale"]
  
         if result_a is not None:
-            result_a_i = [int(i_pt_bin), int(i_eta_bin), result_a["x"], result_a["mean_guess"], result_a["mean_guess_err"], result_a["mean_guess_err_bootstrap"], result_a["mean_fit"], result_a["mean_fit_err"], result_a["std_guess"], result_a["std_fit"], reco_pt_i]
+            result_a_i = [int(i_pt_bin), int(i_eta_bin), result_a["x"], result_a["mean_fit"], result_a["mean_guess"], result_a["mean_fit_err"], result_a["mean_guess_err"]]
             df_a.loc[i_row] = result_a_i
 
         else:
-            result_a_i = [int(i_pt_bin), int(i_eta_bin), 0, 0, 0, 0, 0, 0, 0, reco_pt_i]
+            result_a_i = [int(i_pt_bin), int(i_eta_bin), 0, 0, 0, 0, 0]
             #df.loc[i_row] = result_a_i
 
         # Load second sample
@@ -122,11 +122,11 @@ for i_eta_bin in range(num_eta_bins):
                 result_b = result_b["scale"]
  
         if result_b is not None:
-            result_b_i = [int(i_pt_bin), int(i_eta_bin), result_b["x"], result_b["mean_guess"], result_b["mean_guess_err"], result_b["mean_guess_err_bootstrap"], result_b["mean_fit"], result_b["mean_fit_err"], result_b["std_guess"], result_b["std_fit"], reco_pt_i]
+            result_b_i = [int(i_pt_bin), int(i_eta_bin), result_b["x"], result_b["mean_fit"], result_b["mean_guess"], result_b["mean_fit_err"], result_b["mean_guess_err"]]
             df_b.loc[i_row] = result_b_i
 
         else:
-            result_b_i = [int(i_pt_bin), int(i_eta_bin), 0, 0, 0, 0, 0, 0, 0, reco_pt_i]
+            result_b_i = [int(i_pt_bin), int(i_eta_bin), 0, 0, 0, 0, 0]
             #df.loc[i_row] = result_b_i
             
         i_row += 1
@@ -139,25 +139,17 @@ for i_eta_bin in range(num_eta_bins):
 
     df_a_eta_bin = df_a[df_a["eta_bin"] == i_eta_bin]
     x_a = df_a_eta_bin["mean_pt"].values
-    x_reco_a = df_a_eta_bin["reco_pt"].values
-    y_fit_a = df_a_eta_bin["mean_scale_fit"].values
-    y_hist_a = df_a_eta_bin["mean_scale"].values
-    #dy_fit_a = df_a_eta_bin["mean_scale_fit_err"].values
-    dy_fit_a = df_a_eta_bin["mean_scale_err_bootstrap"].values
-    dy_hist_a = df_a_eta_bin["mean_scale_err"].values
-    std_a = df_a_eta_bin["std_scale"].values
-    rms_a = df_a_eta_bin["rms_scale"].values
+    y_fit_a = df_a_eta_bin["mean_fit"].values
+    y_hist_a = df_a_eta_bin["mean_guess"].values
+    dy_fit_a = df_a_eta_bin["mean_fit_err"].values
+    dy_hist_a = df_a_eta_bin["mean_guess_err"].values
 
     df_b_eta_bin = df_b[df_b["eta_bin"] == i_eta_bin]
     x_b = df_b_eta_bin["mean_pt"].values
-    x_reco_b = df_b_eta_bin["reco_pt"].values
-    y_fit_b = df_b_eta_bin["mean_scale_fit"].values
-    y_hist_b = df_b_eta_bin["mean_scale"].values
-    #dy_fit_b = df_b_eta_bin["mean_scale_fit_err"].values
-    dy_fit_b = df_b_eta_bin["mean_scale_err_bootstrap"].values
-    dy_hist_b = df_b_eta_bin["mean_scale_err"].values
-    std_b = df_b_eta_bin["std_scale"].values
-    rms_b = df_b_eta_bin["rms_scale"].values
+    y_fit_b = df_b_eta_bin["mean_fit"].values
+    y_hist_b = df_b_eta_bin["mean_guess"].values
+    dy_fit_b = df_b_eta_bin["mean_fit_err"].values
+    dy_hist_b = df_b_eta_bin["mean_guess_err"].values
 
     ## Plotting (fitted means)
     fig, ax = plt.subplots()

@@ -11,9 +11,9 @@ def encode_eta(eta):
         return "pos" + str(eta).replace(".", "p")
 
 # Argument parser
-# Example: python3 Preprocess/fit_histos.py --input outputs/Histogram/muon2024g_muonjet --output outputs/Fit/muon2024g_muonjet --script Preprocess/fit_histo.py --plotdir plots/Fit/muon2024g_muonjet
+# Example: python3 Preprocess/fit_histos.py --input /vols/cms/pb4918/cmt/PrePlot2D/dijet_syst/WJet_2024_V15/cat_base/prod_180226/data__noweights_0.root --output outputs/Fit/muon2024g_muonjet --script Preprocess/fit_histo.py --plotdir plots/Fit/muon2024g_muonjet
 parser = argparse.ArgumentParser(description='Create histograms')
-parser.add_argument('--input', '-i', type=str, help='Input directory')
+parser.add_argument('--input', '-i', type=str, help='Input file')
 parser.add_argument('--output', '-o', type=str, help='Output directory')
 parser.add_argument('--plotdir', '-p', type=str, default="plots/Fit/data", help='Plot directory')
 parser.add_argument('--runlocal', action='store_true', help='Run locally without condor')
@@ -47,11 +47,11 @@ with open(f"{condor_parent_dir}/fit_histos_args.txt", "w") as f:
             pt_max = pt_edges[i_pt_bin+1]
 
             outfile_name = f"fit_pt_{i_pt_bin}_eta_{i_eta_bin}.pkl"
-            f.write(f"{args.input}/histos_pt_{i_pt_bin}_eta_{i_eta_bin}.root {args.output}/{outfile_name} {int(pt_min)} {int(pt_max)} {encode_eta(eta_min)} {encode_eta(eta_max)} 1 {args.plotdir}\n")
+            f.write(f"{args.input} {args.output}/{outfile_name} {int(pt_min)} {int(pt_max)} {encode_eta(eta_min)} {encode_eta(eta_max)} 1 {args.plotdir}\n")
 
         # pT inclusive jobs
         outfile_name = f"fit_pt_inclusive_eta_{i_eta_bin}.pkl"
-        f.write(f"{args.input}/histos_pt_inclusive_eta_{i_eta_bin}.root {args.output}/{outfile_name} {int(pt_edges[0])} {int(pt_edges[-1])} {encode_eta(eta_min)} {encode_eta(eta_max)} 1 {args.plotdir}\n")
+        f.write(f"{args.input} {args.output}/{outfile_name} {int(pt_edges[0])} {int(pt_edges[-1])} {encode_eta(eta_min)} {encode_eta(eta_max)} 1 {args.plotdir}\n")
 
     # eta inclusive jobs
     for i_pt_bin in range(len(pt_edges)-1):
@@ -59,7 +59,7 @@ with open(f"{condor_parent_dir}/fit_histos_args.txt", "w") as f:
         pt_max = pt_edges[i_pt_bin+1]
 
         outfile_name = f"fit_eta_inclusive_pt_{i_pt_bin}.pkl"
-        f.write(f"{args.input}/histos_eta_inclusive_pt_{i_pt_bin}.root {args.output}/{outfile_name} {int(pt_min)} {int(pt_max)} {encode_eta(eta_edges[0])} {encode_eta(eta_edges[-1])} 1 {args.plotdir}\n")
+        f.write(f"{args.input} {args.output}/{outfile_name} {int(pt_min)} {int(pt_max)} {encode_eta(eta_edges[0])} {encode_eta(eta_edges[-1])} 1 {args.plotdir}\n")
 
 # Create the wrapper file
 wrapper_file_content = f"""#!/bin/bash

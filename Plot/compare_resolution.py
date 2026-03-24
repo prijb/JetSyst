@@ -72,7 +72,7 @@ num_pt_bins = len(pt_edges) - 1
 num_eta_bins = len(eta_edges) - 1
 
 # Make a pandas dataframe to collect the fit results to plot
-col_names = ["pt_bin", "eta_bin", "mean_pt", "std_diff", "std_guess", "std_diff_err", "std_guess_err"]
+col_names = ["pt_bin", "eta_bin", "mean_pt", "std_fit", "std_guess", "std_fit_err", "std_guess_err"]
 df_a = pd.DataFrame(columns=col_names)
 df_b = pd.DataFrame(columns=col_names)
 
@@ -122,16 +122,16 @@ for i_eta_bin in range(num_eta_bins):
     df_b_eta_bin = df_b[df_b["eta_bin"] == i_eta_bin]
 
     x_a = df_a_eta_bin["mean_pt"].values
-    y_fit_a = df_a_eta_bin["std_diff"].values/x_a
-    y_hist_a = df_a_eta_bin["std_guess"].values/x_a
-    dy_fit_a = df_a_eta_bin["std_diff_err"].values/x_a
-    dy_hist_a = df_a_eta_bin["std_guess_err"].values/x_a
+    y_fit_a = df_a_eta_bin["std_fit"].values
+    y_hist_a = df_a_eta_bin["std_guess"].values
+    dy_fit_a = df_a_eta_bin["std_fit_err"].values
+    dy_hist_a = df_a_eta_bin["std_guess_err"].values
 
     x_b = df_b_eta_bin["mean_pt"].values
-    y_fit_b = df_b_eta_bin["std_diff"].values/x_b
-    y_hist_b = df_b_eta_bin["std_guess"].values/x_b
-    dy_fit_b = df_b_eta_bin["std_diff_err"].values/x_b
-    dy_hist_b = df_b_eta_bin["std_guess_err"].values/x_b
+    y_fit_b = df_b_eta_bin["std_fit"].values
+    y_hist_b = df_b_eta_bin["std_guess"].values
+    dy_fit_b = df_b_eta_bin["std_fit_err"].values
+    dy_hist_b = df_b_eta_bin["std_guess_err"].values
 
     # Check for very large errors
     dy_fit_a_large = (np.any(dy_fit_a > 0.5))

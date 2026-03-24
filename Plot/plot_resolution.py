@@ -44,7 +44,7 @@ num_pt_bins = len(pt_edges) - 1
 num_eta_bins = len(eta_edges) - 1
 
 # Make a pandas dataframe to collect the fit results to plot
-col_names = ["pt_bin", "eta_bin", "mean_pt", "std_diff", "std_guess", "std_diff_err", "std_guess_err"]
+col_names = ["pt_bin", "eta_bin", "mean_pt", "std_fit", "std_guess", "std_fit_err", "std_guess_err"]
 df = pd.DataFrame(columns=col_names)
 df_inclusive = pd.DataFrame(columns=col_names)
 
@@ -71,7 +71,6 @@ for i_eta_bin in range(num_eta_bins):
 
 # Load the inclusive eta bin results
 for i_pt_bin in range(num_pt_bins):
-#for i_pt_bin in range(2, num_pt_bins):
     fname = f"{input_dir}/fit_eta_inclusive_pt_{i_pt_bin}.pkl"
 
     result = None
@@ -94,17 +93,17 @@ for i_eta_bin in range(num_eta_bins):
     df_eta_bin = df[df["eta_bin"] == i_eta_bin]
 
     x = df_eta_bin["mean_pt"].values
-    y_fit = df_eta_bin["std_diff"].values/x
-    y_hist = df_eta_bin["std_guess"].values/x
-    dy_fit = df_eta_bin["std_diff_err"].values/x
-    dy_hist = df_eta_bin["std_guess_err"].values/x
+    y_fit = df_eta_bin["std_fit"].values
+    y_hist = df_eta_bin["std_guess"].values
+    dy_fit = df_eta_bin["std_fit_err"].values
+    dy_hist = df_eta_bin["std_guess_err"].values
 
     ## Plotting
     fig, ax = plt.subplots()
     ax.errorbar(x, y_fit, yerr=dy_fit, fmt="o", color="red", label="Fit")
-    ax.errorbar(x, y_hist, yerr=dy_hist, fmt="^", color="orange", label="Hist (50-16 interval)")
+    ax.errorbar(x, y_hist, yerr=dy_hist, fmt="^", color="orange", label="RMS")
     ax.set_xlabel(r"Mean L1 $p_T$ [GeV]")
-    ax.set_ylabel(r"Mean L1-Reco/L1 $p_T$")
+    ax.set_ylabel(r"Resolution")
     ax.text(0.65, 0.75, f"eta bin [{eta_edges[i_eta_bin]}, {eta_edges[i_eta_bin+1]}]", transform=ax.transAxes, fontsize=16*1.2)
     ax.legend(fontsize=16*1.2)
     ax.set_ylim(0, None)
@@ -137,11 +136,11 @@ for i_eta_bin in range(num_eta_bins):
     ax.errorbar(x, y_fit, yerr=dy_fit, fmt="o", color="red", label="Fit")
     ax.plot(x_plot, y_fit_plot, '-', label="Fit GPR", color="red")
     ax.fill_between(x_plot, y_fit_plot - dy_fit_plot, y_fit_plot + dy_fit_plot, color='red', alpha=0.2)
-    ax.errorbar(x, y_hist, yerr=dy_hist, fmt="^", color="orange", label="Hist")
-    ax.plot(x_plot, y_hist_plot, '-', label="Hist GPR", color="orange")
+    ax.errorbar(x, y_hist, yerr=dy_hist, fmt="^", color="orange", label="RMS")
+    ax.plot(x_plot, y_hist_plot, '-', label="RMS GPR", color="orange")
     ax.fill_between(x_plot, y_hist_plot - dy_hist_plot, y_hist_plot + dy_hist_plot, color='orange', alpha=0.2)
     ax.set_xlabel(r"Mean L1 $p_T$ [GeV]")
-    ax.set_ylabel(r"Mean L1-Reco/L1 $p_T$")
+    ax.set_ylabel(r"Resolution")
     ax.text(0.65, 0.75, f"eta bin [{eta_edges[i_eta_bin]}, {eta_edges[i_eta_bin+1]}]", transform=ax.transAxes, fontsize=16*1.2)
     ax.set_ylim(0, None)
     ax.set_xscale("log")
