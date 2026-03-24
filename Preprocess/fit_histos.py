@@ -68,7 +68,6 @@ wrapper_file_content = f"""#!/bin/bash
 cd {cwd}
 source /cvmfs/cms.cern.ch/cmsset_default.sh
 source /vols/grid/cms/setup.sh
-export X509_USER_PROXY={cwd}/condor_submission/cms.proxy
 cmsenv
 #Run the python script
 python3 {script} --input $1 --output $2 --ptlow $3 --pthigh $4 --etalow $5 --etahigh $6 --rebin $7 --plotdir $8
@@ -87,7 +86,6 @@ error = {condor_parent_dir}/logs/fit_histo_$(Cluster)_$(Process).err
 log = {condor_parent_dir}/logs/fit_histo_$(Cluster)_$(Process).log
 request_cpus = 1
 request_memory = 4GB
-use_x509userproxy = true
 +MaxRuntime = 7199
 queue infile, outfile, ptlow, pthigh, etalow, etahigh, rebin, plotdir from {condor_parent_dir}/fit_histos_args.txt
 """

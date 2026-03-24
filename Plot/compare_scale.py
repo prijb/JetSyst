@@ -105,7 +105,7 @@ for i_eta_bin in range(num_eta_bins):
         if os.path.exists(fname_a):
             with open(fname_a, "rb") as f:
                 result_a = pickle.load(f)
-                result_a = result_a["scale"]
+                result_a = result_a["fit"]
  
         if result_a is not None:
             result_a_i = [int(i_pt_bin), int(i_eta_bin), result_a["x"], result_a["mean_fit"], result_a["mean_guess"], result_a["mean_fit_err"], result_a["mean_guess_err"]]
@@ -119,7 +119,7 @@ for i_eta_bin in range(num_eta_bins):
         if os.path.exists(fname_b):
             with open(fname_b, "rb") as f:
                 result_b = pickle.load(f)
-                result_b = result_b["scale"]
+                result_b = result_b["fit"]
  
         if result_b is not None:
             result_b_i = [int(i_pt_bin), int(i_eta_bin), result_b["x"], result_b["mean_fit"], result_b["mean_guess"], result_b["mean_fit_err"], result_b["mean_guess_err"]]

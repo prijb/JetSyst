@@ -143,7 +143,7 @@ try:
             rms_scale_bootstrap.append(sig_scale_guess_bootstrap)
 
             mean_scale_fit_bootstrap.append(popt_scale_bootstrap[1])
-            std_scale_fit_bootstrap.append(popt_scale[2])
+            std_scale_fit_bootstrap.append(popt_scale_bootstrap[2])
 
         except:
             print(f"Bootstrap fit {i_bootstrap} failed, skipping")
