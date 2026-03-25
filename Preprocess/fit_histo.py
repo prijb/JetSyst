@@ -86,6 +86,8 @@ x_scale_pos_high = np.min([center_pos_scale + (6 // rebin_factor), len(x_scale)]
 fit_x_scale = x_scale[x_scale_pos_low:x_scale_pos_high]
 fit_y_scale = y_scale[x_scale_pos_low:x_scale_pos_high]
 fit_dy_scale = dy_scale[x_scale_pos_low:x_scale_pos_high]
+fit_x_scale_start = fit_x_scale[0]
+fit_x_scale_end = fit_x_scale[-1]
 # Guess parameters
 a_scale_guess = y_scale[center_pos_scale]
 mean_scale_guess = np.average(fit_x_scale, weights=fit_y_scale)
@@ -102,6 +104,7 @@ try:
     plot_x_scale_gauss = np.linspace(fit_x_scale[0], fit_x_scale[-1], 100)
     plot_y_scale_gauss = gauss(plot_x_scale_gauss, *popt_scale)
     fig, ax = plt.subplots()
+    ax.axvspan(fit_x_scale_start, fit_x_scale_end, alpha=0.2, color="red")
     hep.histplot(h_scale, ax=ax, label="Data", color="black", histtype="step", flow=None)
     ax.plot(plot_x_scale_gauss, plot_y_scale_gauss, label="Gaussian Fit", color="red")
     ax.set_xlabel("L1/RecoJet pT")
@@ -163,6 +166,7 @@ try:
 except:
     # Plot the histogram without fit
     fig, ax = plt.subplots()
+    ax.axvspan(fit_x_scale_start, fit_x_scale_end, alpha=0.2, color="red")
     hep.histplot(h_scale, ax=ax, label="Data", color="black", histtype="step", flow=None)
     ax.set_xlabel("L1/RecoJet pT")
     ax.set_ylabel("Events")
